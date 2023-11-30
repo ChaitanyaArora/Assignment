@@ -13,11 +13,6 @@ limiter = Limiter(app, key_func=get_remote_address)
 
 @app.route('/register', methods=['POST'])
 def register():
-    # Implement user registration logic here
-
-
-@app.route('/register', methods=['POST'])
-def register():
     username = request.json.get('username', None)
     email = request.json.get('email', None)
     password = request.json.get('password', None)
@@ -38,6 +33,19 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     # Implement login logic here
+
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    if not username or not password:
+        return jsonify({"msg": "Missing username or password"}), 400
+
+    user = User.query.filter_by(username=username).first()
+    if user is None or not user.check_password(password):
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token), 200
+
 
 @app.route('/secure-endpoint')
 @limiter.limit("5 per minute")
